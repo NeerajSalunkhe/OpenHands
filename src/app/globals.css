@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@media (max-width: 768px) {
+    .backgrd{
+        width: 110vw;
+    }    
+
+    .details {
+        margin-top: 200px;
+        width: 140vw;
+        height: 130vh;
+    }
+
+    .dashboard {
+        margin-top: 180px;
+        width: 140vw;
+        height: 130vh;
+    }
+
+    .dynamic {
+        margin-top: 130px;
+        width: 140vw;
+        height: 130vh;  
+    }
+
+    .mainpage {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .navibar{
+        margin-left: 175px;
+    }
+}
