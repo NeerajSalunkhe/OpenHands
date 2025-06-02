@@ -1,13 +1,12 @@
-import NextAuth from 'next-auth';
-import GithubProvider from 'next-auth/providers/github';
-import GoogleProvider from 'next-auth/providers/google';
-import dbConnect from '@/app/lib/dbConnect';
-import User from '@/app/models/user';
+import NextAuth from "next-auth";
+import GithubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
+import dbConnect from "@/app/lib/dbConnect";
+import User from "@/app/models/user";
 
-// Connect to Mongo once at startup (not on every signIn)
-await dbConnect();
+await dbConnect(); // top-level await is okay in Next 15+
 
-const authOptions = {
+const handler = NextAuth({
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID,
@@ -20,15 +19,13 @@ const authOptions = {
   ],
   callbacks: {
     async signIn({ user }) {
-      if (!user.email) {
-        // If they somehow don't have an email, deny sign-in
-        return false;
-      }
+      if (!user.email) return false;
+
       const existingUser = await User.findOne({ email: user.email });
       if (!existingUser) {
         const newUser = new User({
           email: user.email,
-          username: user.email.split('@')[0],
+          username: user.email.split("@")[0],
           profilephoto: user.image,
         });
         await newUser.save();
@@ -38,14 +35,8 @@ const authOptions = {
       }
       return true;
     },
-    async session({ session, token }) {
-      // Override the session name to whatever we stored
-      session.user.name = token.name;
-      return session;
-    },
   },
-  secret: process.env.NEXTAUTH_SECRET, // make sure this is set in production
-};
+  secret: process.env.NEXTAUTH_SECRET,
+});
 
-const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
