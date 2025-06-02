@@ -1,4 +1,5 @@
 'use client';
+
 import Image from "next/image";
 import Lottie from "lottie-react";
 import Footer from "./components/footer";
@@ -9,6 +10,7 @@ import Link from "next/link";
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid'
+export const dynamic = 'force-dynamic';
 export default function Home() {
   const { data: session } = useSession();
   const [animationData, setAnimationData] = useState(null);
@@ -24,7 +26,7 @@ export default function Home() {
   const isFirstCheck = useRef(true);
 
   useEffect(() => {
-   
+
     if (isFirstCheck.current) {
       prevSessionRef.current = session;
       isFirstCheck.current = false;
@@ -35,7 +37,7 @@ export default function Home() {
       if (!localStorage.getItem(toastKey)) {
         toast("Use desktop for better experience 🙌", {
           duration: 4000,
-          position: 'top-center', 
+          position: 'top-center',
           icon: '💻',
           style: {
             background: '#333',
@@ -50,33 +52,24 @@ export default function Home() {
 
   const [form, setForm] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch('/api/needall');
-        const result = await res.json();
-        if (res.ok) {
-          setForm(result.data);
-        } else {
-          // toast.error(result.message);
-        }
-      } catch (error) {
-        // toast.error("Fetch error:", error);
+  const fetchNeeds = async () => {
+    try {
+      const res = await fetch('/api/needall', { cache: 'no-store' }); // ensure no caching
+      const result = await res.json();
+      if (res.ok) {
+        setForm(result.data);
       }
-    };
-    fetchData();
-  }, []);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNeeds(); 
+  },[]);
+
 
   const router = useRouter();
-  // const handleHelpClick = (e) => {
-  //   console.log(e);
-  //   if (e.email === session?.user?.email) {
-  //     toast.error("You cannot help yourself!");
-  //     return;
-  //   }
-  //   const encodedEmail = encodeURIComponent(e.email);
-  //   router.push(`/api/person/${encodedEmail}?key=${e.key}`);
-  // };
   return (
     <motion.div
       initial={{ y: 20 }}
@@ -177,45 +170,54 @@ export default function Home() {
                 Needy Persons
               </div>
               <ul className="flex flex-col mx-auto max-w-220 gap-4 text-green-100">
-                {
-                  form.map((item) => (
-                    <li
-                      key={uuidv4()}
-                      className="flex items-center justify-between max-w-220 p-5 bg-white/20 rounded-4xl px-10"
+                {form.map((item) => (
+                  <li
+                    key={uuidv4()}
+                    className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full max-w-5xl mx-auto my-4 p-5 bg-white/20 rounded-4xl px-6 lg:px-10 backdrop-blur-md shadow-md"
+                  >
+                    {/* Left: Need Info */}
+                    <div className="flex-1 w-full max-w-md rounded-xl shadow-md p-6 text-white space-y-4 bg-black/30">
+                      <div className="text-lg font-bold">Name: {item.name}</div>
+                      <div className="text-sm text-gray-300">Email: {decodeURIComponent(item.email)}</div>
+
+                      <div className="flex justify-between font-semibold text-sm">
+                        <div className="text-green-300">Required: ₹{item.amount}</div>
+                        <div className="text-blue-300">Collected: ₹{item.collected_amount}</div>
+                      </div>
+
+                      <div className="text-sm text-gray-200">
+                        <span className="font-medium text-white">Message:</span> {item.message}
+                      </div>
+                    </div>
+                    <div className="mt-6 lg:mt-0 lg:ml-5 bg-black/40 p-4 rounded-xl shadow-md max-w-sm w-full text-white">
+                      <div className="text-center font-semibold mb-2">Supportersss</div>
+                      <ul className="space-y-2 text-sm text-gray-200">
+                        {item.supporters && item.supporters.length > 0 ? (
+                          item.supporters.map((supporterMsg, index) => (
+                            <li key={index} className="bg-white/10 p-2 rounded">
+                              {supporterMsg}
+                            </li>
+                          ))
+                        ) : (
+                          <li className="text-gray-400 italic">No supporters yet </li>
+                        )}
+                      </ul>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (item.email.replace(/%40/g, '@') === session?.user?.email) {
+                          toast.error("You cannot help yourself!");
+                        } else {
+                          router.push(`/api/person/${encodeURIComponent(item.email)}?key=${item.key}`);
+                        }
+                      }}
+                      type="button"
+                      className="cursor-pointer mt-6 lg:mt-0 lg:ml-6 text-gray-900 bg-gradient-to-r from-teal-200 to-lime-200 hover:bg-gradient-to-l focus:ring-4 focus:outline-none focus:ring-lime-200 dark:focus:ring-teal-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                     >
-                      <div className="flex-1 max-w-md rounded-xl shadow-md p-6 backdrop-blur-lg text-white space-y-4">
-                        <div className="text-lg font-bold">Name: {item.name}</div>
-                        <div className="text-sm text-gray-300">Email: {decodeURIComponent(item.email)}</div>
-
-                        <div className="flex justify-between font-semibold text-sm">
-                          <div className="text-green-300">Required: ₹{item.amount}</div>
-                          <div className="text-blue-300">Collected: ₹{item.collected_amount}</div>
-                        </div>
-
-                        <div className="text-sm text-gray-200">
-                          <span className="font-medium text-white">Message:</span> {item.message}
-                        </div>
-                      </div>
-                      <div className="backdrop-blur-lg shadow-md bg-black w-100 ml-5 max-w-100 max-h-full min-h-gull">
-                        Supporters
-                      </div>
-                      <button
-                        onClick={() => {
-                          console.log(item.email, session?.user?.email);
-                          if (item.email.replace(/%40/g, '@') === session?.user?.email) {
-                            toast.error("You cannot help yourself!");
-                          } else {
-                            router.push(`/api/person/${encodeURIComponent(item.email)}?key=${item.key}`);
-                          }
-                        }}
-                        type="button"
-                        className="ml-6 cursor-pointer text-gray-900 bg-gradient-to-r from-teal-200 to-lime-200 hover:bg-gradient-to-l hover:from-teal-200 hover:to-lime-200 focus:ring-4 focus:outline-none focus:ring-lime-200 dark:focus:ring-teal-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                      >
-                        Help
-                      </button>
-                    </li>
-                  ))
-                }
+                      Help
+                    </button>
+                  </li>
+                ))}
               </ul>
             </div>
             <div className="border-1 opacity-30 w-full left-0"></div>
