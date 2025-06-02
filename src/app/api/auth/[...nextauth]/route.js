@@ -4,23 +4,23 @@ import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "@/app/lib/dbConnect";
 import User from "@/app/models/user";
 
-// 1) Build the “pure” NextAuth handler (synchronous export)
+// 1) Create the “pure” NextAuth handler (synchronous export)
 const nextAuthHandler = NextAuth({
   providers: [
     GithubProvider({
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!,
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
 
-      // 2) By the time this runs, dbConnect() has already been called below
+      // 2) By the time this runs, dbConnect() has already been called in the wrapper below
       const existingUser = await User.findOne({ email: user.email });
       if (!existingUser) {
         const newUser = new User({
@@ -36,14 +36,14 @@ const nextAuthHandler = NextAuth({
       return true;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET!,
+  secret: process.env.NEXTAUTH_SECRET,
 });
 
-// 3) Wrap it in an async function that ensures dbConnect() runs _before_ NextAuth
+// 3) Wrap it in an async function so that the database is connected before NextAuth runs:
 async function handler(request, response) {
   await dbConnect();
   return nextAuthHandler(request, response);
 }
 
-// 4) Export named handlers (no top‐level await)
+// 4) Export named handlers (no top-level await or TypeScript syntax):
 export { handler as GET, handler as POST };
