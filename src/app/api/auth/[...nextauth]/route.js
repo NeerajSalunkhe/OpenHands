@@ -1,10 +1,10 @@
-// app/api/auth/[...nextauth]/route.js
 import NextAuth from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "@/app/lib/dbConnect";
 import User from "@/app/models/user";
 
+// 1) Create the “pure” NextAuth handler (synchronous export)
 const nextAuthHandler = NextAuth({
   providers: [
     GithubProvider({
@@ -20,7 +20,7 @@ const nextAuthHandler = NextAuth({
     async signIn({ user }) {
       if (!user.email) return false;
 
-      // By the time this runs, dbConnect() has already been awaited in handler()
+      // 2) By the time this runs, dbConnect() has already been called in the wrapper below
       const existingUser = await User.findOne({ email: user.email });
       if (!existingUser) {
         const newUser = new User({
@@ -36,16 +36,14 @@ const nextAuthHandler = NextAuth({
       return true;
     },
   },
-  debug: true, // <-- enable NextAuth’s verbose logging
   secret: process.env.NEXTAUTH_SECRET,
 });
 
+// 3) Wrap it in an async function so that the database is connected before NextAuth runs:
 async function handler(request, response) {
-  // 1) Ensure Mongo is connected before NextAuth handlers run
   await dbConnect();
-
-  // 2) Call the actual NextAuth handler
   return nextAuthHandler(request, response);
 }
 
+// 4) Export named handlers (no top-level await or TypeScript syntax):
 export { handler as GET, handler as POST };
