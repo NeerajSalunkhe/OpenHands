@@ -12,6 +12,7 @@ const handler = NextAuth({
       authorization: {
         params: {
           redirect_uri: `https://open-hands-ten.vercel.app/api/auth/callback/github`,
+          path:'logic',
         },
       },
     }),
@@ -21,6 +22,7 @@ const handler = NextAuth({
       authorization: {
         params: {
           redirect_uri: `https://open-hands-ten.vercel.app/api/auth/callback/google`,
+          path:'logic',
         },
       },
     }),
