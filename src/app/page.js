@@ -61,10 +61,10 @@ export default function Home() {
         if (res.ok) {
           setForm(result.data);
         } else {
-          toast.error(result.message);
+          // toast.error(result.message);
         }
       } catch (error) {
-        toast.error("Fetch error:", error);
+        // toast.error("Fetch error:", error);
       }
     };
     fetchData();
