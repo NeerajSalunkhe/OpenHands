@@ -20,18 +20,10 @@ export default function SignUpPage() {
 
     const providers = [
         ['https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg', 'Google'],
-        ['https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png', 'GitHub'],
     ];
 
     const handleClick = (providerName) => {
-        if (providerName === 'GitHub') {
-            setClicked(!clicked);
-            signIn('github', {
-                callbackUrl: '/dashboard',
-                prompt: 'login'
-            });
-        }
-        else if (providerName === 'Google') {
+        if (providerName === 'Google') {
             setClicked(!clicked);
             signIn('google', {
                 callbackUrl: '/dashboard',
@@ -62,7 +54,7 @@ export default function SignUpPage() {
                                         alt={alt}
                                         width={25}
                                         height={25}
-                                        className={`${alt === 'GitHub' ? 'filter dark:invert' : ''} rounded-full w-8 h-8`}
+                                        className={`rounded-full w-8 h-8`}
                                     />
                                     <div className='ml-4 font-bold text-gray-300 text-xl md:text-2xl'>
                                         {alt}

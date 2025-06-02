@@ -1,30 +1,13 @@
 import NextAuth from 'next-auth';
-import GithubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import dbConnect from '@/app/lib/dbConnect';
 import User from '@/app/models/user';
 
 const handler = NextAuth({
   providers: [
-    GithubProvider({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
-      authorization: {
-        params: {
-          redirect_uri: `https://open-hands-ten.vercel.app/api/auth/callback/github`,
-          path:'logic',
-        },
-      },
-    }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      authorization: {
-        params: {
-          redirect_uri: `https://open-hands-ten.vercel.app/api/auth/callback/google`,
-          path:'logic',
-        },
-      },
     }),
   ],
   callbacks: {
@@ -44,8 +27,8 @@ const handler = NextAuth({
         user.name = existingUser.username;
       }
       return true;
-    }
-  }
+    },
+  },
 });
 
 export { handler as GET, handler as POST };

@@ -121,6 +121,10 @@ const Dashboard = () => {
                         message: updatedNeed.message,
                         amount: updatedNeed.amount,
                         collected_amount: Number(updatedNeed.collected_amount) + Number(amount),
+                        supporters: [
+                            ...(updatedNeed.supporters || []),
+                            `${formData.name} sends ${formData.amount} with ${formData.message}`
+                        ],
                     }),
                 });
 
@@ -136,8 +140,6 @@ const Dashboard = () => {
                 toast.error("Something went wrong");
             }
         };
-
-
         try {
             setIsPaying(true);
 

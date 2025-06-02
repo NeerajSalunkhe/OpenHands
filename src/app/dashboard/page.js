@@ -79,7 +79,7 @@ const Dashboard = () => {
     const handleAdd = async () => {
         const { name, message, amount } = formData;
         const collected_amount = 0;
-
+        const supporters=[]
         let eml = encodeURIComponent(session?.user?.email?.toLowerCase() || '');
         eml.replace(/%40/g,'@')
         if (!name || !message || !amount) {
@@ -105,6 +105,7 @@ const Dashboard = () => {
                     message,
                     amount,
                     collected_amount,
+                    supporters,
                 }),
             });
 

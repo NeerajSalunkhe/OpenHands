@@ -9,6 +9,7 @@ const Needschema = new mongoose.Schema(
     message: { type: String,required:true},
     amount: { type: Number, required: true},
     collected_amount :{ type: Number},
+    supporters: { type: [String], default: [] },
   }
 );
 

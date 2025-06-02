@@ -8,10 +8,7 @@ export async function POST(request) {
     try {
         const body = await request.json();
         body.email = body.email.replace(/%40/g, '@');
-
         const need = await Need.create(body);
-
-        // If collected_amount >= amount, delete it immediately
         if (Number(need.collected_amount) >= Number(need.amount)) {
             await Need.findByIdAndDelete(need._id);
             return NextResponse.json({

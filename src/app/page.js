@@ -13,32 +13,29 @@ export default function Home() {
   const { data: session } = useSession();
   const [animationData, setAnimationData] = useState(null);
   const lottieRef = useRef();
-  // ------ Load Lottie file as before ------
+
   useEffect(() => {
     fetch('/lottie/tea.json')
       .then((res) => res.json())
       .then(setAnimationData);
   }, []);
 
-  // ------ Track previous session so we know when "login" just happened ------
   const prevSessionRef = useRef(null);
   const isFirstCheck = useRef(true);
 
   useEffect(() => {
-    // On first render: just store whatever `session` is, but do NOT fire a toast.
+   
     if (isFirstCheck.current) {
       prevSessionRef.current = session;
       isFirstCheck.current = false;
       return;
     }
-
-    // After first render: if prevSession was null (logged‐out) and now session is truthy, user just logged in.
     if (!prevSessionRef.current && session) {
       const toastKey = `toastShownFor_${session.user?.email}`;
       if (!localStorage.getItem(toastKey)) {
         toast("Use desktop for better experience 🙌", {
           duration: 4000,
-          position: 'top-center', // <-- Here
+          position: 'top-center', 
           icon: '💻',
           style: {
             background: '#333',
@@ -199,7 +196,9 @@ export default function Home() {
                           <span className="font-medium text-white">Message:</span> {item.message}
                         </div>
                       </div>
-
+                      <div className="backdrop-blur-lg shadow-md bg-black w-100 ml-5 max-w-100 max-h-full min-h-gull">
+                        Supporters
+                      </div>
                       <button
                         onClick={() => {
                           console.log(item.email, session?.user?.email);
