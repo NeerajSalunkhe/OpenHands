@@ -9,12 +9,20 @@ const handler = NextAuth({
     GithubProvider({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
-    
+      authorization: {
+        params: {
+          redirect_uri: `https://open-hands-ten.vercel.app/api/auth/callback/github`,
+        },
+      },
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      
+      authorization: {
+        params: {
+          redirect_uri: `https://open-hands-ten.vercel.app/api/auth/callback/google`,
+        },
+      },
     }),
   ],
   callbacks: {
