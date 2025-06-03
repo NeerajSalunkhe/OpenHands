@@ -14,12 +14,9 @@ import { toast, Toaster } from 'react-hot-toast'
 import { v4 as uuidv4 } from 'uuid'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-
 const Dashboard = () => {
     const params = useParams()
-    // Ensure email is decoded if it comes encoded from the URL
-    const email = Array.isArray(params?.email) ? decodeURIComponent(params.email[0]) : decodeURIComponent(params?.email || '');
-
+    const email = Array.isArray(params?.email) ? params.email[0] : params?.email
     const { data: session } = useSession()
 
     const [loading, setLoading] = useState(true)
@@ -31,7 +28,6 @@ const Dashboard = () => {
     const qry = useSearchParams();
     const key_idd = qry.get("key");
     const [need, setNeed] = useState(null);
-
     useEffect(() => {
         fetch('/lottie/support.json')
             .then((res) => res.json())
@@ -64,16 +60,14 @@ const Dashboard = () => {
 
     useEffect(() => {
         async function fetchUser() {
-            // Use encodeURIComponent when making API calls with the email
-            const res = await fetch(`/api/user/${encodeURIComponent(email)}`)
+            const res = await fetch(`/api/user/${email}`)
             const data = await res.json()
             if (data.email) {
                 setUser({
                     image: data.profilephoto || '',
                     email: data.email || '',
                     username: data.username || '',
-                    // Ensure followers are consistent (decoded if they were stored encoded)
-                    followers: data.followers ? data.followers.map(f => decodeURIComponent(f)) : [],
+                    followers: data.followers || [],
                     razorpayid: data.razorpayid,
                     razorpaysecret: data.razorpaysecret,
                     earned: data.earned || 0,
@@ -104,7 +98,6 @@ const Dashboard = () => {
         const fetchNeedAndUpdate = async () => {
             if (!key_idd) return;
             try {
-                // Ensure email is encoded for API call
                 const res = await fetch(`/api/addneed/${encodeURIComponent(email)}?key=${key_idd}`);
                 const data = await res.json();
 
@@ -116,7 +109,6 @@ const Dashboard = () => {
 
                 const updatedNeed = data.data;
 
-                // Ensure email and supporter emails are consistently handled
                 const response = await fetch(`/api/addneed/${encodeURIComponent(email)}`, {
                     method: 'POST',
                     headers: {
@@ -125,7 +117,7 @@ const Dashboard = () => {
                     body: JSON.stringify({
                         key: updatedNeed.key,
                         name: updatedNeed.name,
-                        email: encodeURIComponent(updatedNeed.email), // Encode email before sending to backend
+                        email: updatedNeed.email,
                         message: updatedNeed.message,
                         amount: updatedNeed.amount,
                         collected_amount: Number(updatedNeed.collected_amount) + Number(amount),
@@ -151,7 +143,6 @@ const Dashboard = () => {
         try {
             setIsPaying(true);
 
-            // Pass email and user1.email consistently encoded if your `initiate` action expects it
             const order = await initiate(amount, formData, email, user1.razorpayid, user1.razorpaysecret);
 
             const options = {
@@ -165,7 +156,7 @@ const Dashboard = () => {
                 callback_url: 'https://eneqd3r9zrjok.x.pipedream.net/',
                 prefill: {
                     name: name,
-                    email: email || 'anonymous@example.com', // Use the original email for prefill
+                    email: email || 'anonymous@example.com',
                     contact: '0000000000',
                 },
                 notes: {
@@ -180,8 +171,7 @@ const Dashboard = () => {
                         earned: user1.earned + Number(amount),
                     };
                     setUser(updatedUser);
-                    // Ensure email is encoded when sending to the API
-                    await fetch(`/api/user/${encodeURIComponent(email)}`, {
+                    await fetch(`/api/user/${email}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -211,7 +201,6 @@ const Dashboard = () => {
         if (!email) return;
         async function fetchPayments() {
             try {
-                // Ensure email is encoded for API call
                 const res = await fetch(`/api/paysearch?query=${encodeURIComponent(email)}`);
                 if (!res.ok) {
                     toast.error('Failed to fetch payment data');
@@ -224,7 +213,7 @@ const Dashboard = () => {
             }
         }
         fetchPayments();
-    }, [user1, email]); // Added email to dependency array
+    }, [user1]);
 
     return (
         <motion.div
@@ -233,7 +222,7 @@ const Dashboard = () => {
             exit={{ y: -20 }}
             transition={{ duration: 0.5, ease: 'easeInOut' }}
         >
-            <Toaster position='top-center' />
+            {/* <Toaster position='top-center'/> */}
             <Script src="https://checkout.razorpay.com/v1/checkout.js" />
 
             <div className=" flex flex-col justify-center text-gray-200 gap-10 m-0 inset-0 -z-10 min-h-screen h-full w-full items-center px-5 p-5 md:p-10 pt-30 [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)]">
@@ -255,12 +244,11 @@ const Dashboard = () => {
                             <div>{user1.earned} ₹ Collected</div>
                         </div>
                         <div className='flex justify-center'>
-                            {/* Pass encoded emails to FollowButton */}
-                            <FollowButton viewerEmail={encodeURIComponent(session?.user?.email || '')} targetEmail={encodeURIComponent(email || '')} />
-                            <Link href={`/api/follower/${encodeURIComponent(email || '')}`} type="button" className="m-2 ml-3 text-white bg-gradient-to-r from-pink-400 via-pink-500 to-pink-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-pink-300 dark:focus:ring-pink-800 shadow-lg shadow-pink-500/50 dark:shadow-lg dark:shadow-pink-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 w-28">
+                            <FollowButton viewerEmail={encodeURIComponent(session?.user?.email)} targetEmail={encodeURIComponent(email)} />
+                            <Link href={`/api/follower/${email}`} type="button" className="m-2 ml-3 text-white bg-gradient-to-r from-pink-400 via-pink-500 to-pink-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-pink-300 dark:focus:ring-pink-800 shadow-lg shadow-pink-500/50 dark:shadow-lg dark:shadow-pink-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 w-28">
                                 followers
                             </Link>
-                            <Link href={`/api/following/${encodeURIComponent(email || '')}`} type="button" className="m-2 ml-3 text-white bg-gradient-to-r from-pink-400 via-pink-500 to-pink-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-pink-300 dark:focus:ring-pink-800 shadow-lg shadow-pink-500/50 dark:shadow-lg dark:shadow-pink-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 w-28">
+                            <Link href={`/api/following/${email}`} type="button" className="m-2 ml-3 text-white bg-gradient-to-r from-pink-400 via-pink-500 to-pink-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-pink-300 dark:focus:ring-pink-800 shadow-lg shadow-pink-500/50 dark:shadow-lg dark:shadow-pink-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 w-28">
                                 following
                             </Link>
                         </div>

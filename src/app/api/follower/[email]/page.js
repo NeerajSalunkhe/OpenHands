@@ -4,29 +4,23 @@ import toast, { Toaster } from 'react-hot-toast'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useSession } from "next-auth/react";
-
-const FollowerPage = () => { // Renamed from FollowButton to FollowerPage for clarity
+const FollowButton = ({ }) => {
     const params = useParams();
-    // Decode the email from the URL parameter
-    const targetEmail = Array.isArray(params?.email) ? decodeURIComponent(params.email[0]) : decodeURIComponent(params?.email || '');
-
+    const targetEmail = Array.isArray(params?.email) ? params.email[0] : params?.email
     const [targetUser, setTargetUser] = useState({
         followers: [],
     })
     const { data: session, status } = useSession();
-
     useEffect(() => {
         if (!targetEmail) return
 
         const fetchTargetUser = async () => {
             try {
-                // Encode the email for the API call to ensure consistency
                 const res = await fetch(`/api/user/${encodeURIComponent(targetEmail)}`)
                 const data = await res.json()
                 if (data.email) {
                     setTargetUser({
-                        // Decode each follower email if they were stored encoded
-                        followers: data.followers ? data.followers.map(f => decodeURIComponent(f)) : [],
+                        followers: data.followers || [],
                     })
                 }
             } catch (err) {
@@ -42,8 +36,7 @@ const FollowerPage = () => { // Renamed from FollowButton to FollowerPage for cl
             <Toaster />
             <div className="absolute inset-0 -z-10 h-full w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)] flex flex-col justify-baseline text-white">
                 <div className='mt-20 '>
-                    {/* Ensure consistent email encoding for Link href */}
-                    <Link href={encodeURIComponent(targetEmail) === encodeURIComponent(session?.user?.email || '') ? '/dashboard' : `/api/person/${encodeURIComponent(targetEmail)}`}
+                    <Link href={targetEmail == session?.user?.email.replace(/@/,'%40') ? '/dashboard' : `/api/person/${targetEmail}`}
                         type="button" className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">GO BACK</Link>
                     <div className='font-semibold mb-3 min-w-150 text-2xl text-center'>Followers</div>
                     <div className='space-y-2'>
@@ -66,4 +59,4 @@ const FollowerPage = () => { // Renamed from FollowButton to FollowerPage for cl
     )
 }
 
-export default FollowerPage
+export default FollowButton
