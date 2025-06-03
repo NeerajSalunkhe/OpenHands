@@ -64,6 +64,7 @@ export default function Header() {
 
           <nav className="hidden md:flex text-gray-400 mr-auto ml-4 py-1 pl-4 border-l border-gray-400 text-base justify-center">
             {/* (Empty for now; add nav links here if needed) */}
+            <Link href={'/'} class="mr-5 text-gray-300 hover:text-white">Home</Link>
           </nav>
 
           {!session ? (
